@@ -1,0 +1,74 @@
+{
+  "name": "rms-desktop",
+  "version": "0.1.0",
+  "private": true,
+  "description": "RMS Desktop wrapper",
+  "homepage": "https://example.com/rms-desktop",
+  "author": {
+    "name": "Ayan Naseer",
+    "email": "ayannaseerg67@gmail.com"
+  },
+  "main": "main.cjs",
+  "scripts": {
+    "dev": "concurrently -k -n FRONTEND,BACKEND,ELECTRON -c magenta,cyan,green \"bun run --cwd ../frontend dev -- --host 127.0.0.1 --port 5173\" \"RMS_RUNTIME=desktop bun run --cwd ../backend dev\" \"wait-on tcp:127.0.0.1:5173 http://127.0.0.1:8080/api/health && electron .\"",
+    "start": "electron .",
+    "build:frontend": "bun run --cwd ../frontend build",
+    "build:backend": "bun install --cwd ../backend --production --ignore-scripts",
+    "dist": "bun run build:frontend && bun run build:backend && electron-builder",
+    "dist:linux": "bun run build:frontend && bun run build:backend && electron-builder --linux AppImage deb",
+    "dist:linux:deb": "bun run build:frontend && bun run build:backend && electron-builder --linux deb",
+    "dist:win": "bun run build:frontend && bun run build:backend && electron-builder --win nsis"
+  },
+  "devDependencies": {
+    "concurrently": "^9.2.1",
+    "electron": "^37.4.0",
+    "electron-builder": "^24.13.3",
+    "wait-on": "^8.0.5"
+  },
+  "build": {
+    "appId": "com.rms.desktop",
+    "productName": "RMSDesktop",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "main.cjs",
+      "preload.cjs",
+      "package.json"
+    ],
+    "extraResources": [
+      {
+        "from": "../frontend/dist",
+        "to": "frontend-dist"
+      },
+      {
+        "from": "../backend/src",
+        "to": "backend/src"
+      },
+      {
+        "from": "../backend/node_modules",
+        "to": "backend/node_modules"
+      }
+    ],
+    "linux": {
+      "target": [
+        "AppImage",
+        "deb"
+      ],
+      "category": "Office",
+      "maintainer": "Ayan Naseer <ayannaseerg67@gmail.com>"
+    },
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "RMS Desktop"
+    }
+  }
+}
