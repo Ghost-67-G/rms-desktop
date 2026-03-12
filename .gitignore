@@ -2,3 +2,5 @@ node_modules/
 dist/
 out/
 release/
+vendor/mongodb/bin/
+vendor/mongodb/**/*.tgz

@@ -2,7 +2,7 @@
   "name": "rms-desktop",
   "version": "0.1.0",
   "private": true,
-  "description": "RMS Desktop wrapper",
+  "description": "Restaurant Management System desktop app with managed local services",
   "homepage": "https://example.com/rms-desktop",
   "author": {
     "name": "Ayan Naseer",
@@ -14,10 +14,11 @@
     "start": "electron .",
     "build:frontend": "bun run --cwd ../frontend build",
     "build:backend": "bun install --cwd ../backend --production --ignore-scripts",
-    "dist": "bun run build:frontend && bun run build:backend && electron-builder",
-    "dist:linux": "bun run build:frontend && bun run build:backend && electron-builder --linux AppImage deb",
-    "dist:linux:deb": "bun run build:frontend && bun run build:backend && electron-builder --linux deb",
-    "dist:win": "bun run build:frontend && bun run build:backend && electron-builder --win nsis"
+    "clean:release": "node -e \"const fs=require('fs');const path=require('path');const dir='release';if(fs.existsSync(dir)){for(const f of fs.readdirSync(dir)){if(/\\.deb$|\\.AppImage$|^latest.*\\.yml$/.test(f)) fs.rmSync(path.join(dir,f),{force:true});}}\"",
+    "dist": "bun run clean:release && bun run build:frontend && bun run build:backend && electron-builder",
+    "dist:linux": "bun run clean:release && bun run build:frontend && bun run build:backend && electron-builder --linux AppImage deb",
+    "dist:linux:deb": "bun run clean:release && bun run build:frontend && bun run build:backend && electron-builder --linux deb",
+    "dist:win": "bun run clean:release && bun run build:frontend && bun run build:backend && electron-builder --win nsis"
   },
   "devDependencies": {
     "concurrently": "^9.2.1",
@@ -28,8 +29,10 @@
   "build": {
     "appId": "com.rms.desktop",
     "productName": "RMSDesktop",
+    "artifactName": "RMS-Desktop-${version}-${os}-${arch}.${ext}",
     "directories": {
-      "output": "release"
+      "output": "release",
+      "buildResources": "build"
     },
     "files": [
       "main.cjs",
@@ -48,6 +51,10 @@
       {
         "from": "../backend/node_modules",
         "to": "backend/node_modules"
+      },
+      {
+        "from": "vendor/mongodb",
+        "to": "mongodb"
       }
     ],
     "linux": {
@@ -55,8 +62,20 @@
         "AppImage",
         "deb"
       ],
+      "icon": "build/icon.svg",
+      "executableName": "rms-desktop",
       "category": "Office",
+      "description": "Offline-first RMS desktop app with managed local MongoDB storage",
+      "desktop": {
+        "Name": "RMS Desktop",
+        "Comment": "Restaurant Management System",
+        "StartupWMClass": "RMS Desktop"
+      },
       "maintainer": "Ayan Naseer <ayannaseerg67@gmail.com>"
+    },
+    "deb": {
+      "synopsis": "Restaurant Management System desktop app",
+      "priority": "optional"
     },
     "win": {
       "target": [
